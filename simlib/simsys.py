@@ -188,13 +188,23 @@ class System:
         else:
             raise StopSimulation
 
-    def run(self):
-        """Start system simulation."""
+    def run(self, call_back=None):
+        """Start system simulation.
+        
+        Parameters
+        ----------
+        call_back: callable
+            It will be called after each iteration.    
+        """
+        if not callable(call_back):
+            raise TypeError('call_back should be callable')
         if not self._initialized:
             self.initialize()
         try:
             while True:
                 self.step_forward()
+                if call_back is not None:
+                    call_back()
         except StopSimulation:
             pass
 
