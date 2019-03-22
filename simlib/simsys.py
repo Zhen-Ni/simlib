@@ -40,7 +40,7 @@ class System:
         for each sampling time.
 
     callback: callable, optional
-        Callback function. Will be called after each iteration.
+        Callback function. Will be called after each iteration.        
 
     name: string, optional
         The name of this system.
@@ -123,6 +123,14 @@ class System:
     @property
     def logger(self):
         return self._logger
+    
+    @property
+    def callback(self):
+        return self._callback_function
+    
+    @callback.setter
+    def callback(self, callback=None):
+        self._callback_function = callback
 
     def add_block(self, block):
         """Add a block to the simulation system."""
@@ -188,23 +196,13 @@ class System:
         else:
             raise StopSimulation
 
-    def run(self, call_back=None):
-        """Start system simulation.
-        
-        Parameters
-        ----------
-        call_back: callable
-            It will be called after each iteration.    
-        """
-        if not callable(call_back):
-            raise TypeError('call_back should be callable')
+    def run(self):
+        """Start system simulation."""
         if not self._initialized:
             self.initialize()
         try:
             while True:
                 self.step_forward()
-                if call_back is not None:
-                    call_back()
         except StopSimulation:
             pass
 
