@@ -14,11 +14,10 @@ __all__ = ['System', 'BaseBlock', 'NA']
 STEPRATETOL = 1e-6
 
 
-class NAType:
+class NAType(float):
     pass
 
-
-NA = NAType()
+NA = NAType('nan')
 
 
 class System:
