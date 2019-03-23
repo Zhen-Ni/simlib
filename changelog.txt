@@ -1,4 +1,8 @@
-﻿20190322
+﻿20190323
+改进了UserDefinedFunction，使其能够接受时间作为参数
+对NAType进行改进，使得NA直接继承于float('nan')
+
+20190322
 采用github进行项目管理
 
 20180928

@@ -108,9 +108,15 @@ class UserDefinedFunction(BaseBlock):
         if nout is set to None, the output of the function is not necessarily
         iterable and it will be sent to outports[0].
 
+    t_as_arg: bool, optional
+        Whether the user-defined function `func` accepts `t` as a keyword
+        argument. If it is True, the simulation time will be an additional
+        keyword argument passed to the function within each iteration. (default
+        to False)
+
     nin: int, optional
         Number of input signals. This should also be the number of input 
-        parameters of func. (default = 1)
+        parameters of func. (default to 1)
 
     nout: int or None, optional
         Number of output signals. If nout is None, output of the user-defined
@@ -125,18 +131,21 @@ class UserDefinedFunction(BaseBlock):
         The name of this block.
     """
 
-    def __init__(self, func, nin=1, nout=None, dt=None,
+    def __init__(self, func, t_as_arg=False, nin=1, nout=None, dt=None,
                  name='UserDefinedFunction'):
         if nout is None:
             super().__init__(nin=nin, nout=1, dt=dt, name=name)
         else:
             super().__init__(nin=nin, nout=nout, dt=dt, name=name)
 
-        self._func = func
+        if t_as_arg:
+            self._func = lambda _t, *_xs: func(*_xs, t=_t)
+        else:
+            self._func = lambda _t, *_xs: func(*_xs)
         self._direct_output = False if nout is None else True
 
     def BLOCKSTEP(self, *xs):
         if self._direct_output:
-            return self._func(*xs)
+            return self._func(self.t, *xs)
         else:
-            return self._func(*xs),
+            return self._func(self.t, *xs),
