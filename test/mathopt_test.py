@@ -56,22 +56,10 @@ def test_DotProduct():
     scope.plot()
 
 
-def test_UserDefinedFunction():
-    source1 = UserDefinedSource(lambda t: t * 0.5 - 1)
-    opt = UserDefinedFunction(lambda x,t: (2*x,2*t), t_as_input=True,nout=2)
-    scope = Recorder(3)
-    system = System(dt=0.1)
-    system.add_blocks(source1, opt, scope)
-    opt.inports[0].connect(source1.outports[0])
-    scope.inports[0].connect(source1.outports[0])
-    scope.inports[1].connect(opt.outports[0])
-    scope.inports[2].connect(opt.outports[1])
-    system.initialize()
-    system.run()
-    scope.plot()
+
 
 if __name__ == '__main__':
-#    test_Sum()
-#    test_Gain()
-#    test_DotProduct()
-    test_UserDefinedFunction()
+    test_Sum()
+    test_Gain()
+    test_DotProduct()
+

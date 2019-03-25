@@ -6,6 +6,7 @@ from .signalrouting import *
 from .mathopt import *
 from .discrete import *
 from .spectral_analyzer import *
+from .user_defined_function import *
 
 from .adaptive_filter import *
 
