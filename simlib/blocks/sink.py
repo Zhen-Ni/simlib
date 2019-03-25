@@ -180,7 +180,7 @@ class XYGraph(BaseBlock):
         has_data = False
         for i, data in enumerate(xs):
             try:
-                x,y = data
+                x, y = data
             except (TypeError, ValueError):
                 raise SimulationError('Input to {s} should be iterable with '
                                       'two arrays'.format(s=self))

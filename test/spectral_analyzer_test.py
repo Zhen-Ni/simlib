@@ -10,12 +10,13 @@ sys.path.append(os.curdir)
 
 from simlib import *
 
+
 def test_FourierTransformer():
-    source = UserDefinedSource(lambda t: sin(2*pi*5*t**2))
+    source = UserDefinedSource(lambda t: sin(2 * pi * 5 * t**2))
     sa = FourierTransformer(0, normalize=True)
     bundle = Bundle(2)
-    abs_ = UserDefinedFunction(lambda x:np.abs(x))
-    graph = XYGraph(1,'freq', dt=0.1)
+    abs_ = UserDefinedFunction(lambda x: np.abs(x))
+    graph = XYGraph(1, 'freq', dt=0.1)
     scope = Scope(batch_size=10)
     system = System(dt=0.01, t_stop=10)
     system.add_blocks(source, sa, graph, bundle, abs_, scope)
@@ -29,11 +30,12 @@ def test_FourierTransformer():
     system.run()
     return system
 
+
 def test_PowerSpectrum():
-    source = UserDefinedSource(lambda t: t-5+sin(2*pi*5*t**2))
+    source = UserDefinedSource(lambda t: t - 5 + sin(2 * pi * 5 * t**2))
     sa = PowerSpectrum(100, detrend='linear', scaling='spectrum')
     bundle = Bundle(2)
-    graph = XYGraph(1,'freq', dt=0.1)
+    graph = XYGraph(1, 'freq', dt=0.1)
     scope = Scope(batch_size=10, refresh=False)
     system = System(dt=0.01, t_stop=10)
     system.add_blocks(source, sa, graph, bundle, scope)
@@ -49,5 +51,5 @@ def test_PowerSpectrum():
 
 
 if __name__ == '__main__':
-#    test_FourierTransformer()
+    #    test_FourierTransformer()
     test_PowerSpectrum()

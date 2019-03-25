@@ -12,6 +12,7 @@ den = [10, 1, 8]
 #den = [1, 0, 0]
 eng = None
 
+
 def test_FIRLMS():
     mu, lenfir = 0.01, 20
     system = System(t_stop=100)
@@ -95,6 +96,7 @@ def test_FIRAPLMS():
     # matlab plot
     return system.logger.simplot(name='APLMS', eng=eng)
 
+
 def test_FIRTDLMS():
     mu, lenfir = 0.01, 20
     system = System(t_stop=10)
@@ -122,13 +124,13 @@ def test_FIRTDLMS():
     # matlab plot
     return system.logger.simplot(name='FIRTDLMS', eng=eng)
 
+
 def test_IIRLMS():
-    mu, N,M = 0.01, 3,3
+    mu, N, M = 0.01, 3, 3
     system = System(t_stop=100)
     source = GaussianNoise(seed=0)
     viber = TransferFunction(num, den)
     recorder = Recorder(2)
-    lms = IIRLMS(N,M,initial_weight_input=[0.1,0.2,0.3],initial_weight_output=[0.1,0.8,0.01], mu=mu)
     comp = Sum('+-')
     system.add_blocks(source, viber, recorder, lms, comp)
     # build up the system
@@ -149,11 +151,12 @@ def test_IIRLMS():
     # matlab plot
 #    return system.logger.simplot(name='IIRLMS', eng=eng)
 
+
 def test_FIRRLS():
     lambda_, lenfir = 0.9, 20
     system = System(t_stop=10)
     source = GaussianNoise(seed=0)
-    viber = TransferFunction(num,den)
+    viber = TransferFunction(num, den)
     recorder = Recorder(2)
     rls = FIRRLS(length=lenfir, lambda_=lambda_)
     comp = Sum('+-')
@@ -179,8 +182,8 @@ def test_FIRRLS():
 
 
 if __name__ == '__main__':
-#    import matlab.engine
-#    eng = matlab.engine.start_matlab()
+    #    import matlab.engine
+    #    eng = matlab.engine.start_matlab()
     res = test_FIRLMS()
 #    sys1 = test_FIRNLMS()
 #    sys2 = test_FIRAPLMS()

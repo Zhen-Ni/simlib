@@ -1,5 +1,7 @@
 ﻿20190325
 在block目录下新建了分类user_defined_function
+加入了PythonFunction模块
+改进了warning功能，使其能够处理重复的警告
 
 20190323
 改进了UserDefinedFunction，使其能够接受时间作为参数

@@ -9,9 +9,9 @@ from simlib import *
 
 
 def test_Scope():
-    source1 = UserDefinedSource(lambda t: t * 1.0 -50)
+    source1 = UserDefinedSource(lambda t: t * 1.0 - 50)
     source2 = RepeatingSequence()
-    scope = Scope(2, dt=0.1 ,batch_size=100,refresh=True, autoscalar=True)
+    scope = Scope(2, dt=0.1, batch_size=100, refresh=True, autoscalar=True)
     system = System(dt=0.1, t_stop=100)
     system.add_blocks(source1, source2, scope)
     scope.inports[0].connect(source1.outports[0])
@@ -19,12 +19,13 @@ def test_Scope():
     system.initialize()
     system.run()
 
+
 def test_XYGraph():
-    source = UserDefinedSource(lambda t: sin(2*pi*5*t**2))
+    source = UserDefinedSource(lambda t: sin(2 * pi * 5 * t**2))
     sa = FourierTransformer(100, normalize=True)
     bundle = Bundle(2)
-    abs_ = UserDefinedFunction(lambda x:np.abs(x))
-    graph = XYGraph(1,'freq', autoscalar=False, dt=0.1)
+    abs_ = UserDefinedFunction(lambda x: np.abs(x))
+    graph = XYGraph(1, 'freq', autoscalar=False, dt=0.1)
     system = System(dt=0.01, t_stop=10)
     system.add_blocks(source, sa, graph, bundle, abs_)
     sa.inports[0].connect(source.outports[0])
@@ -35,6 +36,7 @@ def test_XYGraph():
     system.initialize()
     system.run()
     return system
+
 
 def test_Recorder():
     source1 = UserDefinedSource(lambda t: t * 0.5 - 1)
@@ -48,7 +50,8 @@ def test_Recorder():
     system.run()
     recorder.plot()
 
+
 if __name__ == '__main__':
-#    test_Scope()
+    #    test_Scope()
     test_XYGraph()
 #    test_Recorder()

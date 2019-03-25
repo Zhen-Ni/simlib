@@ -56,10 +56,7 @@ def test_DotProduct():
     scope.plot()
 
 
-
-
 if __name__ == '__main__':
     test_Sum()
     test_Gain()
     test_DotProduct()
-

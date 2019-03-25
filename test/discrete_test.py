@@ -24,7 +24,7 @@ def test_Delay():
 
 def test_TappedDelay():
     source = UserDefinedSource(lambda t: t)
-    component = TappedDelay(2, initial=[5,1])
+    component = TappedDelay(2, initial=[5, 1])
     recorder = Recorder(2)
     system = System(dt=1)
     system.add_blocks(source, component, recorder)
@@ -38,7 +38,7 @@ def test_TappedDelay():
 
 def test_FIRFilter():
     source = UserDefinedSource(lambda t: t)
-    component = FIRFilter([2,0,0,1], initial_inputs=[3, 2, 1])
+    component = FIRFilter([2, 0, 0, 1], initial_inputs=[3, 2, 1])
     recorder1 = Recorder(2)
     system = System(dt=1, t_stop=5)
     system.add_blocks(source, component, recorder1)
@@ -52,11 +52,11 @@ def test_FIRFilter():
 
 def test_FIRFilterTimeVarying():
     source = UserDefinedSource(lambda t: t)
-    coefficients = Constant([2,0,0,1])
+    coefficients = Constant([2, 0, 0, 1])
     component = FIRFilterTimeVarying(4, initial_inputs=[3, 2, 1])
     recorder1 = Recorder(2)
     system = System(dt=1, t_stop=5)
-    system.add_blocks(source, component,coefficients, recorder1)
+    system.add_blocks(source, component, coefficients, recorder1)
     component.inports[0].connect(source.outports[0])
     component.inports[1].connect(coefficients.outports[0])
     recorder1.inports[0].connect(source.outports[0])
@@ -65,9 +65,10 @@ def test_FIRFilterTimeVarying():
     system.run()
     recorder1.plot()
 
+
 def test_IIRFilter():
     source = UserDefinedSource(lambda t: t)
-    component = IIRFilter([0,1,5,7,8],[2,1,3,6])
+    component = IIRFilter([0, 1, 5, 7, 8], [2, 1, 3, 6])
     recorder1 = Recorder(2)
     system = System(dt=1, t_stop=5)
     system.add_blocks(source, component, recorder1)
@@ -78,11 +79,12 @@ def test_IIRFilter():
     system.run()
     recorder1.plot()
 
+
 def test_IIRFilterTimeVarying():
     source = UserDefinedSource(lambda t: t)
-    num = Constant([0,1,5,7,8])
-    den = Constant([2,1,3,6])
-    component = IIRFilterTimeVarying(5,4)
+    num = Constant([0, 1, 5, 7, 8])
+    den = Constant([2, 1, 3, 6])
+    component = IIRFilterTimeVarying(5, 4)
     recorder1 = Recorder(2)
     system = System(dt=1, t_stop=5)
     system.add_blocks(source, component, recorder1, num, den)
@@ -99,7 +101,7 @@ def test_IIRFilterTimeVarying():
 def test_TransferFunction():
     source = UserDefinedSource(lambda t: t)
     component = TransferFunction(
-        [0, 0, 0, 1, 0], [0,0,1,2,1])
+        [0, 0, 0, 1, 0], [0, 0, 1, 2, 1])
     recorder1 = Recorder(2)
     system = System(dt=1, t_stop=5)
     system.add_blocks(source, component, recorder1)

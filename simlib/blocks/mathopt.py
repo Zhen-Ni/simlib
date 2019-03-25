@@ -91,5 +91,3 @@ class DotProduct(BaseBlock):
         for i in range(len(xs)):
             res *= xs[i]
         return res,
-
-
