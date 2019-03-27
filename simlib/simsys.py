@@ -193,7 +193,15 @@ class System:
         return res
 
     def step_forward(self):
-        """Simulate one step."""
+        """Simulate one step.
+        
+        The procedure is as follows:
+        (1) check whether the system has been initialized
+        (2) check whether the simulation time reaches the end
+        (3) iter all the blocks
+        (4) log data for this time step
+        (5) call callback function if it is available
+        """
         self._assert_initialization()
         if self.t < self.t_stop:
             self._n += 1
@@ -668,19 +676,49 @@ class BaseBlock:
                                   .format(s=self,
                                           size=len(self._outports)))
 
-        for i, port in enumerate(self._outports):
-            if ys[i] is NA:
+        for i, y in enumerate(ys):
+            if y is NA:
                 continue
-            port.set(ys[i], self.n)
+            self._outports[i].set(y, self.n)
 
     # The following functions can be overwritten by children
 
     def INITFUNC(self):
-        """Things before initialization."""
+        """The method for initializing the block.
+        
+        This function is invoked once after the simulation system is
+        initialized. It is usually used to set up the initial values for the
+        simulation.
+        """
         pass
 
     def OUTPUTSTEP(self, portid):
+        """Method for giving outputs indenpendent of the inputs of this time
+        step.
+        
+        OUTPUTSTEP is invoked as many times as number of outports of the block
+        at the beginning of each iteration during the simulation. This function
+        provides the outputs of the block which is independent of the inputs to
+        the block at this time step. OUTPUTSTEP takes  exactly one argument,
+        which is an interger indicating the portid of the output. It should
+        return the corresponding output for this time step if it is independent
+        of the input. However, if the output of the corresponding port is
+        dependent on the input, this function should return sim.NA for the
+        port.
+        """
         return NA
 
     def BLOCKSTEP(self, *xs):
+        """ Method for giving outputs dependent on the inputs of this time
+        step.
+        
+        The blockstep is called once in each iteration after all the inputs to
+        this block are known, and it should provides output for all the ports
+        unless the corresponding port has already been set by outputstep. This
+        function should take the same number input arguments as that defined
+        by nin, which are the inputs to the block, and returns an iterable
+        object with length nout. Each element of the iterable object is the
+        output of the corresponding port. If the output of the port has already
+        been given by outputstep, it may be set to sim.NA.
+        """
         return [NA] * len(self._outports)
