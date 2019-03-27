@@ -368,6 +368,7 @@ class CFunction(BaseBlock):
         return results
 
     def _construct_c_structures(self):
+        """Construct structures for interacting with C code."""
         cinputs = []
         for i in range(self._nin):
             cinputs.append(self._construct_c_structures_helper(
