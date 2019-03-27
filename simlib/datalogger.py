@@ -114,6 +114,7 @@ class DataLogger:
         return names, datas
 
     def asdict(self):
+        """Extract dictionary from logged data."""
         d = {'t': np.array(self._t)}
         for i in range(len(self._ports)):
             d[self._names[i]] = np.array([line[i] for line in self._data])
@@ -136,8 +137,28 @@ class DataLogger:
             filename = filename + '.mat'
         savemat(filename, self.asdict())
 
-    def plot(self):
-        names, datas = self.asplain()
+    def plot(self, signal_names=None):
+        """Use matplotlib to plot logged signals.
+        
+        By default, this function plots all the logged data if signal_names is
+        not given. Users may also specify which signals they want to plot by
+        passing the names of these signals in an iterable object by 
+        `signal_names`, and the specified signals will be plotted in sequence.
+        """
+        if signal_names is None:
+            names, datas = self.asplain()
+        else:
+            d = self.asdict()
+            names = ['t']
+            datas = [d['t']]
+            for name in signal_names:
+                data = d.get(name)
+                if data is None:
+                    self.system.warn('cannot find signal named {n}'
+                                     .format(n=name))
+                    continue
+                names.append(name)
+                datas.append(data)
         fig = plt.figure()
         ax = fig.add_subplot(111)
         for i in range(1, len(names)):
