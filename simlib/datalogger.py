@@ -139,7 +139,7 @@ class DataLogger:
 
     def plot(self, signal_names=None):
         """Use matplotlib to plot logged signals.
-        
+
         By default, this function plots all the logged data if signal_names is
         not given. Users may also specify which signals they want to plot by
         passing the names of these signals in an iterable object by 
