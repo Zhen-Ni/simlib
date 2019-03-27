@@ -6,6 +6,7 @@ This module contains the interface for user-defined functions.
 import ctypes
 import numpy as np
 from ..simsys import BaseBlock, NA
+from ..simexceptions import SimulationError
 
 
 __all__ = ['ctypes', 'UserDefinedFunction', 'PythonFunction', 'CFunction']
@@ -343,7 +344,13 @@ class CFunction(BaseBlock):
 
         # write inputs
         for i in range(self._nin):
-            self._write_c_variable(xs[i], self._cinputs[i], self._sizes_in[i])
+            try:
+                self._write_c_variable(xs[i], self._cinputs[i],
+                                       self._sizes_in[i])
+            except ValueError:
+                raise SimulationError('fail to pass data from {inport} to C '
+                                      'function, please check the size of the '
+                                      'input'.format(inport=self._inports[i]))
 
         # call function in c
         self._blockstep(*self._cinputs, *self._coutputs,
