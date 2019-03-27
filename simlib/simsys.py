@@ -194,7 +194,7 @@ class System:
 
     def step_forward(self):
         """Simulate one step.
-        
+
         The procedure is as follows:
         (1) check whether the system has been initialized
         (2) check whether the simulation time reaches the end
@@ -685,7 +685,7 @@ class BaseBlock:
 
     def INITFUNC(self):
         """The method for initializing the block.
-        
+
         This function is invoked once after the simulation system is
         initialized. It is usually used to set up the initial values for the
         simulation.
@@ -695,7 +695,7 @@ class BaseBlock:
     def OUTPUTSTEP(self, portid):
         """Method for giving outputs indenpendent of the inputs of this time
         step.
-        
+
         OUTPUTSTEP is invoked as many times as number of outports of the block
         at the beginning of each iteration during the simulation. This function
         provides the outputs of the block which is independent of the inputs to
@@ -711,7 +711,7 @@ class BaseBlock:
     def BLOCKSTEP(self, *xs):
         """ Method for giving outputs dependent on the inputs of this time
         step.
-        
+
         The blockstep is called once in each iteration after all the inputs to
         this block are known, and it should provides output for all the ports
         unless the corresponding port has already been set by outputstep. This
