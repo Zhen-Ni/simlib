@@ -1,4 +1,7 @@
-﻿20190325
+﻿20190327
+加入了CFuntion模块，使得simlib能够方便地调用C函数模块
+
+20190325
 在block目录下新建了分类user_defined_function
 加入了PythonFunction模块
 改进了warning功能，使其能够处理重复的警告
