@@ -5,6 +5,7 @@ import sys
 os.chdir('..')
 sys.path.append(os.curdir)
 
+from pylab import *
 from simlib import *
 
 
