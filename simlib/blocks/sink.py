@@ -152,7 +152,6 @@ class XYGraph(BaseBlock):
     -----
     In[i]:
         The input xydata, should be iterable with two arrays of the same size.
-
     """
 
     def __init__(self, nin=1, xlabel='', ylabel='', autoscalar=False,
