@@ -70,6 +70,7 @@ class PDC_classic(BaseBlock):
     def w(self):
         """Get the circular frequency."""
         return self._w
+
     @property
     def components(self):
         """Get the cosine and sine components of the controller."""
@@ -95,7 +96,6 @@ class PDC_classic(BaseBlock):
 
 
 class PDC_improved(BaseBlock):
-
     """Periodic disturbance controller with frequency tracker and faster
     convergence.
 
@@ -106,12 +106,12 @@ class PDC_improved(BaseBlock):
 
     Parameters
     ----------
-    w: iterable
+    w0: iterable
         The circular freuencies of the disturbance.
 
     func_response: callable
-        This function takes `w` as the only parameter and returns the estimated
-        frequency response of the plant.
+        This function takes `w0` as the only parameter and returns the
+        estimated frequency response of the plant.
 
     mu_global: float
         The adaptive gain for the whole iteration procedure.
@@ -167,37 +167,16 @@ class PDC_improved(BaseBlock):
         """
         self._w0 = np.array(w0)
 
-    def set_w(self, w):
-        """Set value for circular frequency w.
-
-        This function modifies w during runtime without changing the phase of
-        of the system.
-        """
-        w = np.asarray(w)
-        w = w[:len(self._w)]
-        n = len(w)
-        w1 = w
-        w0 = self._w[:n]
-        A0 = self._A[:n]
-        B0 = self._B[:n]
-        t = self.t
-        phi1 = (w0 - w1) * t
-        c = np.cos(phi1)
-        s = np.sin(phi1)
-        A1 = A0 * c + B0 * s
-        B1 = B0 * c - A0 * s
-        self._w[:n] = w1
-        self._A[:n] = A1
-        self._B[:n] = B1
-
     @property
     def w(self):
         """Get the circular frequency."""
         return self._w
+
     @property
     def components(self):
         """Get the cosine and sine components of the controller."""
         return self._A, self._B
+
     @property
     def phase(self):
         """Get the current phase."""
@@ -226,7 +205,7 @@ class PDC_improved(BaseBlock):
             abs(g)**2 / (A**2 + B**2 + 1)
 
         self._phase += self._w * self.dt
-        self._phase[self._phase>2*np.pi] -= np.pi * 2
+        self._phase[self._phase > 2 * np.pi] -= np.pi * 2
         return np.sum(self._A * np.cos(self._phase) +
                       self._B * np.sin(self._phase)),
 
