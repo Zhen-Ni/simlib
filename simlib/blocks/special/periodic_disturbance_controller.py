@@ -140,7 +140,7 @@ class PDC_improved(BaseBlock):
     My paper on ICSV26.
     """
 
-    def __init__(self, w, func_response, mu_global, mu_omega=1, dt=None,
+    def __init__(self, w0, func_response, mu_global, mu_omega=1, dt=None,
                  name='PDC_improved'):
         super().__init__(nin=1, nout=1, name=name)
         self._func_response = func_response
@@ -153,16 +153,42 @@ class PDC_improved(BaseBlock):
         self._B = None
         self._phase = None
         self._w = None
-        self._w0 = np.array(w)
+        self._w0 = np.array(w0)
 
     @property
-    def set_w(self, w):
+    def w0(self):
+        return self._w0
+
+    def set_w0(self, w0):
         """Set initial value for w.
 
         Note that this function should be used before initialization of the
         system, otherwise, it would have no effect for the current run.
         """
-        self._w0 = np.array(w)
+        self._w0 = np.array(w0)
+
+    def set_w(self, w):
+        """Set value for circular frequency w.
+
+        This function modifies w during runtime without changing the phase of
+        of the system.
+        """
+        w = np.asarray(w)
+        w = w[:len(self._w)]
+        n = len(w)
+        w1 = w
+        w0 = self._w[:n]
+        A0 = self._A[:n]
+        B0 = self._B[:n]
+        t = self.t
+        phi1 = (w0 - w1) * t
+        c = np.cos(phi1)
+        s = np.sin(phi1)
+        A1 = A0 * c + B0 * s
+        B1 = B0 * c - A0 * s
+        self._w[:n] = w1
+        self._A[:n] = A1
+        self._B[:n] = B1
 
     @property
     def w(self):
@@ -182,7 +208,7 @@ class PDC_improved(BaseBlock):
         self._A = np.zeros(n)
         self._B = np.zeros(n)
         self._phase = np.zeros(n)
-        self._w = self._w0
+        self._w = self._w0.copy()
 
     def BLOCKSTEP(self, *xs):
         err = xs[0]
