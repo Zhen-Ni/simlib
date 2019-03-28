@@ -198,9 +198,10 @@ class System:
         The procedure is as follows:
         (1) check whether the system has been initialized
         (2) check whether the simulation time reaches the end
-        (3) iter all the blocks
-        (4) log data for this time step
-        (5) call callback function if it is available
+        (3) update step number: self._n
+        (4) iter all the blocks
+        (5) log data for this time step
+        (6) call callback function if it is available
         """
         self._assert_initialization()
         if self.t < self.t_stop:
