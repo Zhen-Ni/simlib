@@ -99,7 +99,6 @@ def test_PDC_classic(mu=1e-2):
     ax.set_ylim(ylim)
     ax.text(5.3, 3.05, 'control starts', color='r')
     ax.legend(loc='lower right')
-    fig.savefig('example 1.1 - logger plot.png')
 
 
 show_bode()
