@@ -8,6 +8,6 @@ from .discrete import *
 from .spectral_analyzer import *
 from .user_defined_function import *
 
-from .adaptive_filter import *
+from .special import *
 
 __all__ = [s for s in dir() if not s.startswith('_')]

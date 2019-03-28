@@ -8,6 +8,6 @@ setup(name='simlib',
       description='Python Simulation Library',
       author='Zhen Ni',
       author_email='z.ni@hotmail.com',
-      packages=['simlib', 'simlib.blocks', 'simlib.tools'],
+      packages=['simlib', 'simlib.blocks', 'simlib.tools', 'simlib.blocks.special'],
       package_data={'simlib': ['simulinkplot.m']},
      )

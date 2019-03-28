@@ -60,7 +60,7 @@ def test_CFunction():
     initfunc = 'initfunc'
     outputstep = 'outputstep'
     blockstep = 'blockstep'
-    
+
     source1 = UserDefinedSource(lambda t: t * 0.5 - 1)
     opt = CFunction(libname, types_in, sizes_in, types_out, sizes_out,
                     initfunc, outputstep, blockstep)
@@ -86,8 +86,8 @@ def test_CFunction2():
     initfunc = 'initfunc2'
     outputstep = 'outputstep2'
     blockstep = 'blockstep2'
-    
-    source1 = UserDefinedSource(lambda t: [1,t])
+
+    source1 = UserDefinedSource(lambda t: [1, t])
     opt = CFunction(libname, types_in, sizes_in, types_out, sizes_out,
                     initfunc, outputstep, blockstep)
     scope = Recorder(4)
@@ -99,6 +99,7 @@ def test_CFunction2():
     system.initialize()
     system.run()
     scope.plot()
+
 
 if __name__ == '__main__':
     test_UserDefinedFunction()

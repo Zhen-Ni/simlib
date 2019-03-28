@@ -131,7 +131,7 @@ def test_IIRLMS():
     source = GaussianNoise(seed=0)
     viber = TransferFunction(num, den)
     recorder = Recorder(2)
-    lms = IIRLMS(N, M, initial_weight_input=[ 0.1, 0.2, 0.3],
+    lms = IIRLMS(N, M, initial_weight_input=[0.1, 0.2, 0.3],
                  initial_weight_output=[0.1, 0.8, 0.01], mu=mu)
     comp = Sum('+-')
     system.add_blocks(source, viber, recorder, lms, comp)
