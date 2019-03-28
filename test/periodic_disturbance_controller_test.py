@@ -101,5 +101,48 @@ def test_PDC_classic(mu=1e-2):
     ax.legend(loc='lower right')
 
 
+def test_PDC_improved():
+    t_control_start = 5
+
+    system = sim.System(dt=T, t_stop=20)
+
+    source = sim.UserDefinedSource(func_source, name='source')
+    beam = sim.TransferFunction(SYS_D.num, SYS_D.den, name='beam')
+    switch = sim.UserDefinedFunction(lambda x: 0 if system.t < t_control_start
+                                     else x)
+    controller = sim.PDC_improved(freq_initial,
+                                 lambda x: signal.freqresp(SYS_C, x)[1],
+                                 1,1)
+    combiner = sim.Sum('++')
+    recorder = sim.Recorder(name='recorder')
+
+    system.add_blocks(source, beam, controller, combiner, recorder, switch)
+
+    beam.inports[0].connect(combiner.outports[0])
+    switch.inports[0].connect(beam.outports[0])
+    controller.inports[0].connect(switch.outports[0])
+    combiner.inports[0].connect(source.outports[0])
+    combiner.inports[1].connect(controller.outports[0])
+    recorder.inports[0].connect(beam.outports[0])
+
+    system.log(source.outports[0], 'equivalent disturbance')
+    system.log(controller.outports[0], 'controller output')
+    system.log(beam.outports[0], 'system output')
+    system.run()
+
+    fig = system.logger.plot()
+    fig.set_size_inches(8, 6)
+    ax = fig.axes[0]
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Magnitude')
+    fig.tight_layout()
+    ylim = [-3.5, 3.5]  # ax.get_ylim()
+    ax.plot([5, 5], ylim, 'r')
+    ax.set_ylim(ylim)
+    ax.text(5.3, 3.05, 'control starts', color='r')
+    ax.legend(loc='lower right')
+
+
 show_bode()
 test_PDC_classic()
+test_PDC_improved()
