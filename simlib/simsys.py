@@ -44,7 +44,7 @@ class System:
         for each sampling time.
 
     callback: callable, optional
-        Callback function. Will be called after each iteration.        
+        Callback function. Will be called after each iteration.
 
     name: string, optional
         The name of this system.
@@ -180,10 +180,11 @@ class System:
         self._initialized = True
         self.step_forward()  # Step to n = 0
 
-    def reset(self):
+    def reset(self, reset_logger=True):
         """Reset the system to initial state."""
         self._n = None
-        self._logger = None
+        if reset_logger:
+            self._logger = None
         for b in self._blocks:
             b.reset()
         self._initialized = False
