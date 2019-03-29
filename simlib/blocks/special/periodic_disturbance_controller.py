@@ -56,7 +56,7 @@ class PDC_classic(BaseBlock):
         self._w = np.array(w)
         self._func_response = func_response
         self._mu = np.array(mu)
-        # theta_c and theta_s are the amplitutes of the cosine and sine
+        # theta_c and theta_s are the amplitudes of the cosine and sine
         # components of the disturbance
         self._theta_c = None
         self._theta_s = None
@@ -146,7 +146,7 @@ class PDC_improved(BaseBlock):
         self._func_response = func_response
         self._mu_global = np.array(mu_global)
         self._mu_omega = np.array(mu_omega)
-        # A and B are the amplitutes of the cosine and sine components of the
+        # A and B are the amplitudes of the cosine and sine components of the
         # disturbance, self._phase records the current phase, and w is the
         # estimation of the frequency
         self._A = None
