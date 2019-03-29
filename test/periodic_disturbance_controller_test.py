@@ -19,6 +19,8 @@ T = 0.001
 SYS_D = sim.sample_system(SYS_C, T)
 
 # 等效干扰信号
+
+
 def func_source(t):
     y1 = 1 * np.sin(2 * np.pi * 7.97 * t)
     y2 = 1 * np.cos(2 * np.pi * 12.05 * t + 13)
@@ -67,8 +69,8 @@ def test_PDC_classic(mu=1e-2):
     switch = sim.UserDefinedFunction(lambda x: 0 if system.t < t_control_start
                                      else x)
     controller = sim.PDCClassic(freq_initial,
-                                 lambda x: signal.freqresp(SYS_C, x)[1],
-                                 mu)
+                                lambda x: signal.freqresp(SYS_C, x)[1],
+                                mu)
     combiner = sim.Sum('++')
     recorder = sim.Recorder(name='recorder')
 
@@ -110,7 +112,7 @@ def test_PDC_improved():
                                      else x)
     controller = sim.PDCImproved(freq_initial,
                                  lambda x: signal.freqresp(SYS_C, x)[1],
-                                 1,1)
+                                 1, 1)
     combiner = sim.Sum('++')
     recorder = sim.Recorder(name='recorder')
 
@@ -140,6 +142,7 @@ def test_PDC_improved():
     ax.text(5.3, 3.05, 'control starts', color='r')
     ax.legend(loc='lower right')
 
+
 def test_PDC():
     t_control_start = 5
 
@@ -147,8 +150,8 @@ def test_PDC():
 
     source = sim.UserDefinedSource(func_source, name='source')
     beam = sim.TransferFunction(SYS_D.num, SYS_D.den, name='beam')
-    controller = sim.PDC(3, lambda x: signal.freqresp(SYS_C, x)[1], 1,1,
-                         t_fft=t_control_start,resolution=0.01)
+    controller = sim.PDC(3, lambda x: signal.freqresp(SYS_C, x)[1], 1, 1,
+                         t_fft=t_control_start, resolution=0.01)
     combiner = sim.Sum('++')
     recorder = sim.Recorder(name='recorder')
 
@@ -178,7 +181,7 @@ def test_PDC():
     ax.legend(loc='lower right')
 
 
-#show_bode()
-#test_PDC_classic()
+# show_bode()
+test_PDC_classic()
 test_PDC_improved()
 test_PDC()

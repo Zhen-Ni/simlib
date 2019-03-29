@@ -96,10 +96,63 @@ class PDCClassic(BaseBlock):
         return np.sum(self._theta_c * c + self._theta_s * s),
 
 
-
 class _PDCBase(BaseBlock):
-    def __init__(self, n_components,func_response, mu_global, mu_omega=1, dt=None,
-                 name='_PDCBase'):
+    """ Base class for periodic disturbance controller with frequency tracker
+    and faster convergence.
+
+    This controller uses the adaptive feed-forward technique to control several
+    periodic disturbances with inaccurate frequencies. The frequency tracker
+    is able to track the accurate frequency if an appropriate initial value is
+    given. Metric conversion is also used to accelerate the convergence.
+
+    Parameters
+    ----------
+    n_components: iterable
+        Number of frequency components in disturbance.
+
+    func_response: callable
+        This function takes `w0` as the only parameter and returns the
+        estimated frequency response of the plant.
+
+    mu_global: float
+        The adaptive gain for the whole iteration procedure.
+
+    mu_omega: float, optional
+        The additional multiplier for adaptive gain for frequency estimator.
+        (default to 1)
+
+    dt: float, optional
+        Sampling time. If not given, default to the same as sampling time of
+        the system.
+
+    name: string, optional
+        Name of this block. (default to 'PDC_improved')
+
+    Ports
+    -----
+    In[0]: Error
+        The error signal.
+
+    Out[0]: Output
+        The output of the controller.
+
+    Notes
+    -----
+    Directly using this block will not produce correct results for controlling
+    periodic disturbance as the initial values for the frequencies are all
+    zeros in this class. There are two ways to set the initial frequencies. The
+    first is to use PDCImproved block, which an esitimation of the frequencies
+    should be defined by the user. Another solution is to estimate the
+    frequencies by performing an spectral analysis, and users may refer to PDC
+    block if they would like to use this method.
+
+    See Also
+    ---------
+    PDCImproved, PDC
+    """
+
+    def __init__(self, n_components, func_response, mu_global, mu_omega=1,
+                 dt=None, name='_PDCBase'):
         super().__init__(nin=1, nout=1, name=name)
         self._n_components = n_components
         self._func_response = func_response
@@ -156,8 +209,6 @@ class _PDCBase(BaseBlock):
         self._phase[self._phase > 2 * np.pi] -= np.pi * 2
         return np.sum(self._A * np.cos(self._phase) +
                       self._B * np.sin(self._phase)),
-
-
 
 
 class PDCImproved(_PDCBase):
@@ -228,10 +279,9 @@ class PDCImproved(_PDCBase):
         self._w[:] = self._w0
 
 
-
 class PDC(_PDCBase):
-    """Periodic disturbance controller with frequency tracker and faster
-    convergence.
+    """Periodic disturbance controller with frequency estimator, frequency
+    tracker and faster convergence.
 
     This controller uses the adaptive feed-forward technique to control several
     periodic disturbances with inaccurate frequencies. A FFT analysis is
@@ -292,13 +342,11 @@ class PDC(_PDCBase):
     My paper on ICSV26.
     """
 
-
-
-    def __init__(self, n_components, func_response, mu_global,mu_omega=1,
-                 t_fft=5, resolution = None, window = signal.blackman,
+    def __init__(self, n_components, func_response, mu_global, mu_omega=1,
+                 t_fft=5, resolution=None, window=signal.blackman,
                  dt=None, name='PDC'):
         super().__init__(n_components, func_response=func_response,
-             mu_global=mu_global, mu_omega=mu_omega, dt=dt, name=name)
+                         mu_global=mu_global, mu_omega=mu_omega, dt=dt, name=name)
         self._t_fft = t_fft
         self._resolution = resolution
         self._window = window
@@ -327,22 +375,20 @@ class PDC(_PDCBase):
         resolution = self._resolution
         window = np.asarray(self._window(len(x)))
         if resolution is None:
-            n_fft = None
+            n_fft = len(x)
         else:
-            n_fft_minimal = (1.0/self._t_fft) / resolution * len(x)
+            n_fft_minimal = (1.0 / self._t_fft) / resolution * len(x)
             n_fft = 1
             while n_fft < n_fft_minimal:
                 n_fft <<= 1
-        fx = np.fft.fftshift(np.fft.fft(x*window,n_fft)) / len(x)
-        freq = np.fft.fftshift(np.fft.fftfreq(len(fx),self.dt))
-        fx = fx[freq>=0]
-        freq = freq[freq>=0]
+        fx = np.fft.rfft(x * window, n_fft) / len(x)
+        freq = np.fft.rfftfreq(n_fft, self.dt)
         peaks = signal.find_peaks(abs(fx))[0]
-        peaks = sorted(peaks, key=lambda p:abs(fx)[p], reverse=True)
+        peaks = sorted(peaks, key=lambda p: abs(fx)[p], reverse=True)
         peak_freqs = freq[peaks]
 #        print(peak_freqs[:5])
         w0 = np.zeros(self._n_components)
-        w = peak_freqs[:self._n_components]*2*np.pi
+        w = peak_freqs[:self._n_components] * 2 * np.pi
         w0[:len(w)] = w
         return w0
 
@@ -356,4 +402,3 @@ class PDC(_PDCBase):
             self._fft_finished = True
 
         return super().BLOCKSTEP(*xs)
-
