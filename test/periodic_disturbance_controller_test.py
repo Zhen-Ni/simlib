@@ -19,8 +19,6 @@ T = 0.001
 SYS_D = sim.sample_system(SYS_C, T)
 
 # 等效干扰信号
-
-
 def func_source(t):
     y1 = 1 * np.sin(2 * np.pi * 7.97 * t)
     y2 = 1 * np.cos(2 * np.pi * 12.05 * t + 13)
