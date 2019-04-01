@@ -6,6 +6,17 @@ os.chdir('..')
 from simlib import *
 
 
+def test_Clock():
+    source = Clock()
+    system = System(dt=0.1)
+    system.add_blocks(source)
+    system.log(source.Out[0])
+    system.initialize()
+    system.run()
+    system.logger.plot()
+    return system
+
+
 def test_SineWave():
     source = SineWave(frequency=1)
     system = System(dt=0.1)
@@ -84,6 +95,7 @@ def test_GaussianNoise():
 
 
 if __name__ == '__main__':
+    test_Clock()
     test_SineWave()
     test_Impulse()
     test_Step()

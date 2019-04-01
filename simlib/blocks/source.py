@@ -6,8 +6,31 @@ This module contains the basic sources in control system.
 import math
 from ..simsys import BaseBlock
 
-__all__ = ['SineWave', 'Impulse', 'Step', 'Constant', 'RepeatingSequence',
-           'UserDefinedSource', 'GaussianNoise']
+__all__ = ['Clock', 'SineWave', 'Impulse', 'Step', 'Constant',
+           'RepeatingSequence', 'UserDefinedSource', 'GaussianNoise']
+
+
+class Clock(BaseBlock):
+    """Block of clock which provides time as single output.
+
+    Parameters
+    ----------
+    dt: float, optional
+        Sampling time.
+
+    name: string, optional
+        Name of this block. (default = 'Clock')
+
+    Ports
+    -----
+    Out[0]: Time
+        Current time of the analysis.
+    """
+    def __init__(self, dt=None, name='Clock'):
+        super().__init__(nin=0, nout=1, dt=dt, name=name)
+
+    def BLOCKSTEP(self, *xs):
+        return self.t,
 
 
 class SineWave(BaseBlock):
