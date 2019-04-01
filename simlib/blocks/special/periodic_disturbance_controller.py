@@ -61,6 +61,7 @@ class PDCClassic(BaseBlock):
         # components of the disturbance
         self._theta_c = None
         self._theta_s = None
+        self._g = None
 
     @property
     def set_w(self, w):
