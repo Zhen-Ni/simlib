@@ -20,8 +20,8 @@ class UserDefinedFunction(BaseBlock):
     Parameters
     ----------
     func: callable
-        The user defined function processing the input signals. The number of 
-        inputs to the function is defined by nin. The output of the function 
+        The user defined function processing the input signals. The number of
+        inputs to the function is defined by nin. The output of the function
         can be iterable and the length should be given by nout, and each
         element in the iterable object will be sent to the outports. However,
         if nout is set to None, the output of the function is not necessarily
@@ -34,7 +34,7 @@ class UserDefinedFunction(BaseBlock):
         to False)
 
     nin: int, optional
-        Number of input signals. This should also be the number of input 
+        Number of input signals. This should also be the number of input
         parameters of func. (default to 1)
 
     nout: int or None, optional
@@ -90,7 +90,7 @@ class PythonFunction(BaseBlock):
     initfunc: callable or None, optional
         The user-defined function for INITFUNC. This function is invoked once
         the simulation system is initialized. It is usually used to set up some
-        variables for the simulation. The initfunc should take no input 
+        variables for the simulation. The initfunc should take no input
         arguments and returns nothing (though it is not mandatory).  If
         initfunc is set to None, the defeault version in BaseBlock will be
         used. (default to None)
@@ -178,7 +178,7 @@ class CFunction(BaseBlock):
         calling convention provided by ctypes.
 
     types_in: iterable
-        The datatypes of the input of the block, should be consistent with 
+        The datatypes of the input of the block, should be consistent with
         the functions in the dynamic library. The valid datatypes are defined
         in ctypes. If array is used, user may define its size in `sizes_in`.
 
@@ -190,7 +190,7 @@ class CFunction(BaseBlock):
         the corresponding position in `sizes_in` should be set to sim.NA
 
     types_out: iterable or None
-        The datatypes of the output of the block, should be consistent with 
+        The datatypes of the output of the block, should be consistent with
         the functions in the dynamic library. The valid datatypes are defined
         in ctypes. If array is used, user may define its size in `sizes_out`.
 
@@ -214,21 +214,21 @@ class CFunction(BaseBlock):
         many times as nout at the beginning of each iteration during the
         simulation. This function provides the outputs of the block which is
         independent of the inputs to the block at this time step. The
-        outputstep should be loaded using ctypes and follow the form 
+        outputstep should be loaded using ctypes and follow the form
         ```
         void outputstep(const unsigned int portid, void* output, bool* valid);
         ```
         where `portid` is the ID of the output port, `output` is a pointer
         to the output signal and `valid` shows whether the output is given in
-        outputstep. Not that as void * is used, a type convension might be 
-        necessary in the C function. The outport will be updated only if 
+        outputstep. Not that as void * is used, a type convension might be
+        necessary in the C function. The outport will be updated only if
         `valid` is set to true. If `outputstep` is set to None, the default
         python version in BaseBlock will be used. (default to None)
 
     blockstep: str or None, optional
         The name of the function for BLOCKSTEP. The blockstep is called once
         in each iteration, and it should provides output for all the ports
-        unless the corresponding port has already been set by outputstep. The 
+        unless the corresponding port has already been set by outputstep. The
         `blockstep` should be loaded using ctypes and follow the form
         ```
         void blockstep(const TI0 *x0, const TI1* x1, ...,
@@ -237,7 +237,7 @@ class CFunction(BaseBlock):
         ```
         where `xi` is the input signal, `yi` is the output signal and `validi`
         indicates whether the output is given in this functon. TIi and TOi are
-        the data types of the inputs and outputs defined in `types_in` and 
+        the data types of the inputs and outputs defined in `types_in` and
         `types_out`. If `blockstep` is set to None, the default python routine
         in BaseBlock will be used. (default to None)
 
@@ -246,7 +246,7 @@ class CFunction(BaseBlock):
         for each sampling time.
 
     name: string, optional
-        The name of this block.   
+        The name of this block.
     """
 
     def __init__(self, libname, types_in, sizes_in, types_out, sizes_out,
@@ -286,6 +286,7 @@ class CFunction(BaseBlock):
         initialization.
         """
         if name is None:
+            self._initfunc = None
             return
         self._initfunc = getattr(self._lib, name)
 
@@ -297,6 +298,7 @@ class CFunction(BaseBlock):
         initialization.
         """
         if name is None:
+            self._outputstep = None
             return
         self._outputstep = getattr(self._lib, name)
         self._outputstep.argtypes = [ctypes.c_uint,
@@ -311,6 +313,7 @@ class CFunction(BaseBlock):
         initialization.
         """
         if name is None:
+            self._blockstep = None
             return
         self._blockstep = getattr(self._lib, name)
         argtypes = list([ctypes.POINTER(T) for T in self._types_in])
