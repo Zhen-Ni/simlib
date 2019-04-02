@@ -108,7 +108,7 @@ class _PDCBase(BaseBlock):
 
     Parameters
     ----------
-    n_components: iterable
+    n_components: int
         Number of frequency components in disturbance.
 
     func_response: callable
@@ -311,6 +311,9 @@ class PDC(_PDCBase):
         The time for collecting data for fft analysis. The control will not
         begin until simulation time reaches t_fft. (default to 5)
 
+    t_fft_start: float, optional
+        The beginning time for gathering data for fft analysis. (default to 0)
+
     resolution: float or None, optional
         The computational resoltion for fft analysis. If None is provided, the
         computational resolution is 1/t_fft. If a float is given, the
@@ -344,11 +347,12 @@ class PDC(_PDCBase):
     """
 
     def __init__(self, n_components, func_response, mu_global, mu_omega=1,
-                 t_fft=5, resolution=None, window=signal.blackman,
+                 t_fft=5, t_fft_start=0, resolution=None, window=signal.blackman,
                  dt=None, name='PDC'):
         super().__init__(n_components, func_response=func_response,
                          mu_global=mu_global, mu_omega=mu_omega, dt=dt, name=name)
         self._t_fft = t_fft
+        self._t_fft_start = t_fft_start
         self._resolution = resolution
         self._window = window
         self._data_for_fft = None
@@ -394,8 +398,9 @@ class PDC(_PDCBase):
         return w0
 
     def BLOCKSTEP(self, *xs):
-        if self.t < self._t_fft:
-            self._data_for_fft.append(xs[0])
+        if self.t < self._t_fft+self._t_fft_start:
+            if self.t >= self._t_fft_start:
+                self._data_for_fft.append(xs[0])
             return 0,
 
         if not self._fft_finished:
