@@ -301,6 +301,7 @@ class GaussianNoise(BaseBlock):
     def INITFUNC(self):
         from random import gauss, seed
         seed(self._seed)
+        # note that random.gauss is NOT thread-safe without a lock around calls
         self._gauss = gauss
 
     def BLOCKSTEP(self, *xs):
