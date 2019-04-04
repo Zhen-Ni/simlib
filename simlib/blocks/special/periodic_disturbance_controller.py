@@ -391,7 +391,6 @@ class PDC(_PDCBase):
         peaks = signal.find_peaks(abs(fx))[0]
         peaks = sorted(peaks, key=lambda p: abs(fx)[p], reverse=True)
         peak_freqs = freq[peaks]
-#        print(peak_freqs[:5])
         w0 = np.zeros(self._n_components)
         w = peak_freqs[:self._n_components] * 2 * np.pi
         w0[:len(w)] = w
