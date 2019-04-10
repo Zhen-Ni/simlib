@@ -181,7 +181,8 @@ def test_PDC():
     ax.legend(loc='lower right')
 
 
-# show_bode()
-test_PDC_classic()
-test_PDC_improved()
-test_PDC()
+if __name__ == '__main__':
+    # show_bode()
+    test_PDC_classic()
+    test_PDC_improved()
+    test_PDC()

@@ -9,7 +9,7 @@ import scipy.signal as signal
 
 from ...simsys import BaseBlock
 
-__all__ = ['PDCClassic', 'PDCImproved', 'PDC']
+__all__ = ['PDCClassic', 'PDCImproved', 'PDC', 'PDCFA']
 
 
 class PDCClassic(BaseBlock):
@@ -193,18 +193,19 @@ class _PDCBase(BaseBlock):
 
     def BLOCKSTEP(self, *xs):
         err = xs[0]
-        A = self._A.copy()
-        B = self._B.copy()
+        A = self._A
+        B = self._B
         g = self._func_response(self._w)
         s = np.sin(self._phase)
         c = np.cos(self._phase)
+
+        self._w -= 2 * err * self._mu_global * self._mu_omega *\
+            (g.real * (-A * s + B * c) - g.imag * (A * c + B * s)) * self.dt /\
+            abs(g)**2 / (A**2 + B**2 + 1)
         self._A -= 2 * err * self._mu_global * (g.real * c - g.imag * s)\
             * self.dt / abs(g)**2
         self._B -= 2 * err * self._mu_global * (g.real * s + g.imag * c)\
             * self.dt / abs(g)**2
-        self._w -= 2 * err * self._mu_global * self._mu_omega *\
-            (g.real * (-A * s + B * c) - g.imag * (A * c + B * s)) * self.dt /\
-            abs(g)**2 / (A**2 + B**2 + 1)
 
         self._phase += self._w * self.dt
         self._phase[self._phase > 2 * np.pi] -= np.pi * 2
@@ -321,10 +322,10 @@ class PDC(_PDCBase):
         integer) larger than the given value (in Hz) by padding with zeros or
         cropping the input data. (default to None)
 
-    window: callable, optional
-        The window used for fft analysis. It should take an integer indicating
-        the length of data as input, and returns an iterable object of the
-        given length indicating the window. (default to signal.blackman)
+    window: string, optional
+        The window used for fft analysis. It is used as the first argument for
+        scipy.signal.get_window to get the window for the fft analysis.
+        (default to "blackman")
 
     dt: float, optional
         Sampling time. If not given, default to the same as sampling time of
@@ -347,10 +348,11 @@ class PDC(_PDCBase):
     """
 
     def __init__(self, n_components, func_response, mu_global, mu_omega=1,
-                 t_fft=5, t_fft_start=0, resolution=None, window=signal.blackman,
-                 dt=None, name='PDC'):
+                 t_fft=5, t_fft_start=0, resolution=None,
+                 window="blackman", dt=None, name='PDC'):
         super().__init__(n_components, func_response=func_response,
-                         mu_global=mu_global, mu_omega=mu_omega, dt=dt, name=name)
+                         mu_global=mu_global, mu_omega=mu_omega, dt=dt,
+                         name=name)
         self._t_fft = t_fft
         self._t_fft_start = t_fft_start
         self._resolution = resolution
@@ -378,7 +380,7 @@ class PDC(_PDCBase):
     def _get_w0_using_fft_data(self):
         x = self._data_for_fft
         resolution = self._resolution
-        window = np.asarray(self._window(len(x)))
+        window = np.asarray(signal.get_window(self._window,len(x)))
         if resolution is None:
             n_fft = len(x)
         else:
@@ -407,3 +409,5 @@ class PDC(_PDCBase):
             self._fft_finished = True
 
         return super().BLOCKSTEP(*xs)
+
+PDCFA = PDC
