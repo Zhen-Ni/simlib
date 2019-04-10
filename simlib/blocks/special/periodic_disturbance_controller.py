@@ -8,6 +8,7 @@ import numpy as np
 import scipy.signal as signal
 
 from ...simsys import BaseBlock
+from ...simexceptions import InitializationError
 
 __all__ = ['PDCClassic', 'PDCImproved', 'PDC', 'PDCFA']
 
@@ -171,6 +172,15 @@ class _PDCBase(BaseBlock):
     def w(self):
         """Get the circular frequency."""
         return self._w
+
+    def set_w(self, w):
+        """Set w during runtime.
+
+        The size of `w` should be equal to the original one.
+        """
+        if self._w is None:
+            raise InitializationError('{self} has not been initialized'.format(self=self))
+        self._w[:] = w
 
     @property
     def components(self):
