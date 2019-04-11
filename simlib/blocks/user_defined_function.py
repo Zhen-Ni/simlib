@@ -277,6 +277,51 @@ class CFunction(BaseBlock):
     def clib(self):
         return self._lib
 
+    def invoke(self, name, *args, restype=None):
+        """Call C function with automatic type recognization.
+
+        This method calls the C function in the dynamic library and
+        automatically converts the arguments. The mechanics of the method
+        is converting the args into numpy arrays and using
+        numpy.ctypeslib.as_ctypes to convert them into C types. If the users
+        want to pass values by reference, they should use numpy array objects
+        as args directly or the changes to the input arguments will lose.
+
+        Parameters
+        ----------
+        name: str
+            Name of the C function.
+        *args:
+            Input parameters to the C function.
+        restype: ctypes or None, optional
+            The return type of the C functin. If None, the return type will be
+            left as is. (default to None)
+
+        Returns
+        -------
+        out: np.array
+            The result of the C function.
+
+        Notes
+        -----
+        The argtypes and restype of the C function will be modified by this
+        method.
+        """
+        func = getattr(self._lib, name)
+        if restype is not None:
+            func.restype = restype
+        cargs = []
+        cargtypes = []
+        for i in args:
+            arg = np.asarray(i)
+            carg = np.ctypeslib.as_ctypes(arg)
+            cargtype = type(carg)
+            cargs.append(carg)
+            cargtypes.append(cargtype)
+        func.argtypes = cargtypes
+        res = func(*cargs)
+        return np.asarray(res)
+
     def set_initfunc(self, name):
         """Set initfunc for the block.
 
@@ -372,6 +417,8 @@ class CFunction(BaseBlock):
 
     def _construct_c_structures(self):
         """Construct structures for interacting with C code."""
+        # Necessary to copy inputs as there's no guarantee the inputs are the
+        # correct data types.
         cinputs = []
         for i in range(self._nin):
             cinputs.append(self._construct_c_structures_helper(
