@@ -398,10 +398,10 @@ class PDC(_PDCBase):
             n_fft = 1
             while n_fft < n_fft_minimal:
                 n_fft <<= 1
-        fx = np.fft.rfft(x * window, n_fft) / len(x)
+        fx = abs(np.fft.rfft(x * window, n_fft))
         freq = np.fft.rfftfreq(n_fft, self.dt)
-        peaks = signal.find_peaks(abs(fx))[0]
-        peaks = sorted(peaks, key=lambda p: abs(fx)[p], reverse=True)
+        peaks = signal.find_peaks(fx)[0]
+        peaks = sorted(peaks, key=lambda p: fx[p], reverse=True)
         peak_freqs = freq[peaks]
         n_components = len(self._w)
         w0 = np.zeros(n_components)
