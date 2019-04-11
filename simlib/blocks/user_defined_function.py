@@ -262,7 +262,6 @@ class CFunction(BaseBlock):
         self._types_out = types_out
         self._sizes_in = sizes_in
         self._sizes_out = sizes_out
-        self._cinputs = None
         self._coutputs = None
         self._cstatus = None
         self._construct_c_structures()
@@ -391,17 +390,13 @@ class CFunction(BaseBlock):
             return super().BLOCKSTEP(*xs)
 
         # write inputs
+        cinputs = []
         for i in range(self._nin):
-            try:
-                self._write_c_variable(xs[i], self._cinputs[i],
-                                       self._sizes_in[i])
-            except ValueError:
-                raise SimulationError('fail to pass data from {inport} to C '
-                                      'function, please check the size of the '
-                                      'input'.format(inport=self._inports[i]))
+            cinputs.append(self._get_c_parameter(xs[i], self._types_in[i],
+                                                 self._sizes_in[i]))
 
         # call function in c
-        self._blockstep(*self._cinputs, *self._coutputs,
+        self._blockstep(*cinputs, *self._coutputs,
                         *[ctypes.byref(i) for i in self._cstatus])
 
         # read results
@@ -417,12 +412,6 @@ class CFunction(BaseBlock):
 
     def _construct_c_structures(self):
         """Construct structures for interacting with C code."""
-        # Necessary to copy inputs as there's no guarantee the inputs are the
-        # correct data types.
-        cinputs = []
-        for i in range(self._nin):
-            cinputs.append(self._construct_c_structures_helper(
-                self._types_in[i], self._sizes_in[i]))
         coutputs = []
         for i in range(self._nout):
             coutputs.append(self._construct_c_structures_helper(
@@ -431,7 +420,6 @@ class CFunction(BaseBlock):
         for i in range(self._nout):
             cstatus.append(ctypes.c_bool())
 
-        self._cinputs = cinputs
         self._coutputs = coutputs
         self._cstatus = cstatus
 
@@ -444,15 +432,16 @@ class CFunction(BaseBlock):
             return (ctype * size)()
         else:
             for i in size:
-                ctype = ctype * i
+                ctype = ctypes.ARRAY(ctype, i)
             return ctype()
 
-    def _write_c_variable(self, value, cvariable, size):
-        """Write value to cvariable."""
+    def _get_c_parameter(self, value, ctype, size):
+        """Get C parameter."""
         if size is NA:
-            cvariable.contents.value = value
+            return ctypes.byref(ctype(value))
         else:
-            cvariable[:] = value
+            cval = np.asarray(value, dtype=ctype)
+            return np.ctypeslib.as_ctypes(cval)
 
     def _read_c_variable(self, cvariable, size):
         """Read values from cvariable."""
