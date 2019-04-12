@@ -644,11 +644,6 @@ class TransferFunction(BaseBlock):
         G(z) = (b0*z^n + ... + b(n)*z^0) / (a0*z^m + ... + a(m)*z^0)
     Note n should be equal to or less than m.
 
-    The numerator and denominator of the transfer function can be either
-    defined when initialization or by input of the block. The input ports of
-    the block will follow the following order: input signal, coefficients of
-    numerator, coefficients of denominator.
-
     Parameters
     ----------
     num: array-like object
