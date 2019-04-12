@@ -43,6 +43,11 @@ class Scope(BaseBlock):
     refresh: bool
         Whether to clear history display when updated. (default = False)
 
+    duration: float or None
+        The duration of data to show in the figure. If None, the duration will
+        be set to be as long as possible to show all the data. (default to
+        None)
+
     autoscalar: bool, optional
         Whether to scalar the plot  automatically. defaults to False.
 
@@ -60,11 +65,12 @@ class Scope(BaseBlock):
 
     """
 
-    def __init__(self, nin=1, batch_size=10, refresh=False, autoscalar=False,
-                 dt=None, name='Scope'):
+    def __init__(self, nin=1, batch_size=10, refresh=False, duration=None,
+                 autoscalar=False, dt=None, name='Scope'):
         super().__init__(nin=nin, nout=0, dt=dt, name=name)
         self._batch_size = as_uint(batch_size)
         self._refresh = refresh
+        self._duration = duration
         self._autoscalar = autoscalar
         import matplotlib.pyplot as plt
         self._plt = plt
@@ -109,7 +115,15 @@ class Scope(BaseBlock):
                 else:
                     self._ax.plot(self._time, y)
 
-            self._ax.set_xlim(self._time[0], self._time[-1])
+            if self._duration is None:
+                self._ax.set_xlim(self._time[0], self._time[-1])
+            elif self._duration < self._time[-1] - self._time[0]:
+                self._ax.set_xlim(self._time[-1] - self._duration,
+                                  self._time[-1])
+            else:
+                self._ax.set_xlim(self._time[0],
+                                  self._time[0] + self._duration)
+
             if self._autoscalar:
                 xmin, xmax, ymin, ymax = calculate_xylim(0, 0, ymin, ymax)
                 self._ax.set_ylim(ymin, ymax)

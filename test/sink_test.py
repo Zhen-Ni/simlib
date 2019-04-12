@@ -53,6 +53,6 @@ def test_Recorder():
 
 
 if __name__ == '__main__':
-    #    test_Scope()
-    test_XYGraph()
+    test_Scope()
+#    test_XYGraph()
 #    test_Recorder()
