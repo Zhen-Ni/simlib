@@ -67,7 +67,6 @@ def get_minimum_phase_system_continuous(system, freq_max=None, sigma_min=None,
         A minimum_phase system.
 
     """
-    assert 0, '首先需要保证此系统为因果系统'
     system = system.to_zpk()
     z, p, k = system.zeros, system.poles, system.gain
     # 频率截断
@@ -118,6 +117,7 @@ def get_minimum_phase_system_discrete(system, abs_min=None, keep_gain=True):
         A minimum_phase system.
 
     """
+    assert 0, '首先需要保证此系统为因果系统'
     system = system.to_zpk()
     z, p, k, dt = system.zeros, system.poles, system.gain, system.dt
     # 离散系统，不需要进行频率截断
