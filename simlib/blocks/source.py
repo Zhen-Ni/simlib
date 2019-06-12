@@ -45,7 +45,7 @@ class SineWave(BaseBlock):
         Amplitude of sinewave. (default = 1.0)
 
     frequency: float, optional
-        Freuency in rad/s. (default = 2*pi)
+        Freuency in Hz. (default = 1.0)
 
     phase: float, optional
         Initial phase in rad/s. (default = 0.0)
@@ -61,7 +61,7 @@ class SineWave(BaseBlock):
     BaseBlock
     """
 
-    def __init__(self, amplitude=1.0, frequency=2 * math.pi, phase=0.0,
+    def __init__(self, amplitude=1.0, frequency=1.0, phase=0.0,
                  dt=None, name='SineWave'):
         super().__init__(nin=0, nout=1, dt=dt, name=name)
         self.amplitude = amplitude
