@@ -101,7 +101,7 @@ def get_minimum_phase_system_discrete(system, abs_min=None, keep_gain=True):
     Parameters
     ----------
     system: scipy.signal.dlti
-        Should be a discrete system.
+        Should be a discrete and casual system.
 
     abs_min: float, optional
         The minimum absolute value of the poles and zeros, should be positive
@@ -117,7 +117,6 @@ def get_minimum_phase_system_discrete(system, abs_min=None, keep_gain=True):
         A minimum_phase system.
 
     """
-    assert 0, '首先需要保证此系统为因果系统'
     system = system.to_zpk()
     z, p, k, dt = system.zeros, system.poles, system.gain, system.dt
     # 离散系统，不需要进行频率截断
