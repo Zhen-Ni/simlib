@@ -6,7 +6,9 @@ Provide some useful tools for simlib.
 import numpy as np
 import scipy.signal
 
-__all__ = ['sample_system', 'get_minimum_phase_system_continuous']
+__all__ = ['sample_system', 'get_minimum_phase_system',
+           'get_minimum_phase_system_continuous',
+           'get_minimum_phase_system_discrete']
 
 
 def sample_system(tf, dt):
@@ -34,6 +36,19 @@ def sample_system(tf, dt):
     k = gain / (np.sum(num) / np.sum(den))
     ds = scipy.signal.TransferFunction(num * k, den, dt=dt)
     return ds
+
+
+def get_minimum_phase_system(system, *args, **kwargs):
+    """Get the minimum phase system part from the given system.
+    See 'get_minimum_phase_system_continuous' and
+    'get_minimum_phase_system_discrete' for more information.
+    """
+    if isinstance(system, scipy.signal.lti):
+        return get_minimum_phase_system_continuous(system, *args, **kwargs)
+    elif isinstance(system, scipy.signal.dlti):
+        return get_minimum_phase_system_discrete(system, *args, **kwargs)
+    else:
+        raise ValueError('`system` must be lti or dlti object')
 
 
 def get_minimum_phase_system_continuous(system, freq_max=None, sigma_min=None,
