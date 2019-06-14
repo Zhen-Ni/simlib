@@ -8,7 +8,8 @@ import scipy.signal
 
 __all__ = ['sample_system', 'get_minimum_phase_system',
            'get_minimum_phase_system_continuous',
-           'get_minimum_phase_system_discrete']
+           'get_minimum_phase_system_discrete',
+           'modal_decomposition']
 
 
 def sample_system(tf, dt):
@@ -152,6 +153,81 @@ def get_minimum_phase_system_discrete(system, abs_min=None, keep_gain=True):
         new_gain = system_stablized.gain / hs[0] * ho[0]
         system_stablized.gain = new_gain
     return system_stablized
+
+
+def modal_decomposition(system):
+    """Decomposite a continuous system into modal space.
+
+    Parameters
+    ----------
+    system : scipy.signal.lti
+        The continuous system
+
+    Returns
+    -------
+    k: ndarray
+        Modal participation factor.
+
+    xi: ndarray
+        Modal damping.
+
+    wn: ndarray
+        Modal frequency.
+
+    residue: scipy.signal.TransferFunction
+        Portion of the system which can not be decomposited into modal domain.
+    """
+    system = system.to_tf()
+    num, den = system.num, system.den
+    if num.imag.any() or den.imag.any():
+        raise ValueError('system must be real')
+    # set tol=0.0 to make sure there are no repeated roots
+    r, p, k = scipy.signal.residue(system.num, system.den, tol=0.0)
+    r1, p1 = [], []    # 一阶子系统
+    r2, p2 = [], []    # 二阶子系统
+    for i in range(len(r)):
+        if p[i].imag:
+            # 出现共轭复数根的情况下，只需要储存其中的一个就可以了
+            if p[i].imag > 0:
+                r2.append(r[i])
+                p2.append(p[i])
+        else:
+            r1.append(r[i])
+            p1.append(p[i])
+
+    r, p = [], []
+    k, xi, wn = [], [], []
+    # 一阶子系统无法通过模态坐标表示
+    r.extend(r1)
+    p.extend(p1)
+    # 二阶子系统的r和p均为共轭复数对，表示为r=rr+1j*ri, p=pr+1j*pi
+    for i in range(len(r2)):
+        rr, ri = r2[i].real, r2[i].imag
+        pr, pi = p2[i].real, p2[i].imag
+        p_1 = pr + 1j * pi
+        p_2 = pr - 1j * pi
+        # 分子含s的项无法通过模态坐标表示
+        if rr:    # in case the system doesn't have parts containing the s term
+            a = rr * p_1 / (1j * pi)
+            b = -rr * p_2 / (1j * pi)
+            r.append(a)
+            r.append(b)
+            p.append(p_1)
+            p.append(p_2)
+        # 剩余部分用模态坐标表示
+        w = (pr**2 + pi**2)**0.5
+        k.append(-2*rr*pr-2*ri*pi)
+        xi.append(-pr/w)
+        wn.append(w)
+
+    if len(r):
+        residue = scipy.signal.invres(r, p, k, tol=0)
+        residue = scipy.signal.TransferFunction(*residue)
+    elif k.any():
+        residue = scipy.signal.TransferFunction(k,[1])
+    else:
+        residue = None
+    return np.array(k), np.array(xi), np.array(wn), residue
 
 
 if __name__ == '__main__':
