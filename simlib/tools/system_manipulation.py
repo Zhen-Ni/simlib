@@ -220,8 +220,8 @@ def modal_decomposition(system):
             p.append(p_2)
         # 剩余部分用模态坐标表示
         w = (pr**2 + pi**2)**0.5
-        k.append(-2*rr*pr-2*ri*pi)
-        xi.append(-pr/w)
+        k.append(-2 * rr * pr - 2 * ri * pi)
+        xi.append(-pr / w)
         wn.append(w)
 
     k = np.array(k)
@@ -232,7 +232,7 @@ def modal_decomposition(system):
         residue = scipy.signal.invres(r, p, k_, tol=0)
         residue = scipy.signal.TransferFunction(*residue)
     elif k.any():
-        residue = scipy.signal.TransferFunction(k,[1])
+        residue = scipy.signal.TransferFunction(k, [1])
     else:
         residue = None
     return k, xi, wn, residue
@@ -271,7 +271,7 @@ def modal_superposition(k, xi, wn, residue=None, tol=1e-3):
     modal_decomposition
     """
     n = len(k)
-    if not (n==len(xi) or n == len(wn)):
+    if not (n == len(xi) or n == len(wn)):
         raise ValueError('k, xi and wn should have the same length')
 
     if residue is None:
@@ -283,8 +283,8 @@ def modal_superposition(k, xi, wn, residue=None, tol=1e-3):
 
     for i in range(n):
         numi = np.array([k[i]])
-        deni = np.array([1,2*xi[i]*wn[i], wn[i]*wn[i]])
-        num = np.polyadd(np.polymul(num, deni), np.polymul(numi,den))
+        deni = np.array([1, 2 * xi[i] * wn[i], wn[i] * wn[i]])
+        num = np.polyadd(np.polymul(num, deni), np.polymul(numi, den))
         den = np.polymul(den, deni)
 
     # 多项式化简
@@ -297,7 +297,7 @@ def modal_superposition(k, xi, wn, residue=None, tol=1e-3):
     while it_zeros != len(zeros) and it_poles != len(poles):
         p = poles[it_poles]
         z = zeros[it_zeros]
-        if _complex_equal(p,z,tol):
+        if _complex_equal(p, z, tol):
             common.append(p)
             it_zeros += 1
             it_poles += 1
@@ -314,15 +314,15 @@ def modal_superposition(k, xi, wn, residue=None, tol=1e-3):
 
 
 def _complex_equal(a, b, tol):
-    if abs(a.real-b.real) < tol:
-        if abs(a.imag-b.imag) < tol:
+    if abs(a.real - b.real) < tol:
+        if abs(a.imag - b.imag) < tol:
             return True
     return False
 
 
 def _complex_compare(a, b, tol):
-    if abs(a.real-b.real) < tol:
-        if abs(a.imag-b.imag) < tol:
+    if abs(a.real - b.real) < tol:
+        if abs(a.imag - b.imag) < tol:
             return False
         elif a.imag < b.imag:
             return True
@@ -334,8 +334,6 @@ def _complex_compare(a, b, tol):
         return False
 
 
-
-
 if __name__ == '__main__':
     import scipy.signal as signal
     NUM_C = 5.078e-7, 6.602e-6, 0.05012
@@ -343,10 +341,4 @@ if __name__ == '__main__':
     SYS_C = signal.TransferFunction(NUM_C, DEN_C)
     T = 0.001
     SYS_D = sample_system(SYS_C, T)
-    SYS_DI=signal.TransferFunction(SYS_D.den,SYS_D.num,dt=T)
-
-
-
-
-
-
+    SYS_DI = signal.TransferFunction(SYS_D.den, SYS_D.num, dt=T)
