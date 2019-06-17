@@ -172,17 +172,21 @@ def modal_decomposition(system):
         Modal damping.
 
     wn: ndarray
-        Modal frequency.
+        Modal frequency in rad/s
 
-    residue: scipy.signal.TransferFunction
+    residue: scipy.signal.TransferFunction or None
         Portion of the system which can not be decomposited into modal domain.
+
+    See Also
+    --------
+    modal_superposition
     """
     system = system.to_tf()
     num, den = system.num, system.den
     if num.imag.any() or den.imag.any():
         raise ValueError('system must be real')
     # set tol=0.0 to make sure there are no repeated roots
-    r, p, k = scipy.signal.residue(system.num, system.den, tol=0.0)
+    r, p, k_ = scipy.signal.residue(system.num, system.den, tol=0.0)
     r1, p1 = [], []    # 一阶子系统
     r2, p2 = [], []    # 二阶子系统
     for i in range(len(r)):
@@ -220,14 +224,116 @@ def modal_decomposition(system):
         xi.append(-pr/w)
         wn.append(w)
 
+    k = np.array(k)
+    xi = np.array(xi)
+    wn = np.array(wn)
+
     if len(r):
-        residue = scipy.signal.invres(r, p, k, tol=0)
+        residue = scipy.signal.invres(r, p, k_, tol=0)
         residue = scipy.signal.TransferFunction(*residue)
     elif k.any():
         residue = scipy.signal.TransferFunction(k,[1])
     else:
         residue = None
-    return np.array(k), np.array(xi), np.array(wn), residue
+    return k, xi, wn, residue
+
+
+def modal_superposition(k, xi, wn, residue=None, tol=1e-3):
+    """Construct a continuous system using parameters in modal space.
+
+    Note that the system is assumed to have real parameters.
+
+    Parameters
+    -------
+    k: ndarray
+        Modal participation factor.
+
+    xi: ndarray
+        Modal damping.
+
+    wn: ndarray
+        Modal frequency in rad/s.
+
+    residue: scipy.signal.TransferFunction or None
+        Portion of the system which can not be decomposited into modal domain.
+        (defaults to None)
+
+    tol: float, optional
+        The tolerance for two roots to be considered equal. Default is 1e-6.
+
+    Returns
+    ----------
+    system : scipy.signal.lti
+        The continuous system
+
+    See also
+    --------
+    modal_decomposition
+    """
+    n = len(k)
+    if not (n==len(xi) or n == len(wn)):
+        raise ValueError('k, xi and wn should have the same length')
+
+    if residue is None:
+        num = np.array([0])
+        den = np.array([1])
+    else:
+        num = np.array(residue.num)
+        den = np.array(residue.den)
+
+    for i in range(n):
+        numi = np.array([k[i]])
+        deni = np.array([1,2*xi[i]*wn[i], wn[i]*wn[i]])
+        num = np.polyadd(np.polymul(num, deni), np.polymul(numi,den))
+        den = np.polymul(den, deni)
+
+    # 多项式化简
+    poles = np.sort(np.roots(den))
+    zeros = np.sort(np.roots(num))
+
+    common = []
+    it_poles = 0
+    it_zeros = 0
+    while it_zeros != len(zeros) and it_poles != len(poles):
+        p = poles[it_poles]
+        z = zeros[it_zeros]
+        if _complex_equal(p,z,tol):
+            common.append(p)
+            it_zeros += 1
+            it_poles += 1
+        elif _complex_compare(z, p, tol):
+            it_zeros += 1
+        else:
+            it_poles += 1
+
+    divisor = np.poly(common)
+    den = np.polydiv(den, divisor)[0].real
+    num = np.polydiv(num, divisor)[0].real
+
+    return scipy.signal.TransferFunction(num, den)
+
+
+def _complex_equal(a, b, tol):
+    if abs(a.real-b.real) < tol:
+        if abs(a.imag-b.imag) < tol:
+            return True
+    return False
+
+
+def _complex_compare(a, b, tol):
+    if abs(a.real-b.real) < tol:
+        if abs(a.imag-b.imag) < tol:
+            return False
+        elif a.imag < b.imag:
+            return True
+        else:
+            return False
+    elif a.real < b.real:
+        return True
+    else:
+        return False
+
+
 
 
 if __name__ == '__main__':
