@@ -26,7 +26,6 @@ class Clock(BaseBlock):
     Out[0]: Time
         Current time of the analysis.
     """
-
     def __init__(self, dt=None, name='Clock'):
         super().__init__(nin=0, nout=1, dt=dt, name=name)
 
