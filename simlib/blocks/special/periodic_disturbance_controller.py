@@ -179,7 +179,8 @@ class _PDCBase(BaseBlock):
         The size of `w` should be equal to the original one.
         """
         if self._w is None:
-            raise InitializationError('{self} has not been initialized'.format(self=self))
+            raise InitializationError(
+                '{self} has not been initialized'.format(self=self))
         self._w[:] = w
 
     @property
@@ -390,7 +391,7 @@ class PDC(_PDCBase):
     def _get_w0_using_fft_data(self):
         x = self._data_for_fft
         resolution = self._resolution
-        window = np.asarray(signal.get_window(self._window,len(x)))
+        window = np.asarray(signal.get_window(self._window, len(x)))
         if resolution is None:
             n_fft = len(x)
         else:
@@ -410,7 +411,7 @@ class PDC(_PDCBase):
         return w0
 
     def BLOCKSTEP(self, *xs):
-        if self.t < self._t_fft+self._t_fft_start:
+        if self.t < self._t_fft + self._t_fft_start:
             if self.t >= self._t_fft_start:
                 self._data_for_fft.append(xs[0])
             return 0,
@@ -420,5 +421,6 @@ class PDC(_PDCBase):
             self._fft_finished = True
 
         return super().BLOCKSTEP(*xs)
+
 
 PDCFA = PDC
