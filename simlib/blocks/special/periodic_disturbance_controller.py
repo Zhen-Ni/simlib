@@ -7,7 +7,7 @@ A collection of control algorithms for adaptive control.
 import numpy as np
 import scipy.signal as signal
 
-from ...simsys import BaseBlock
+from ...simsys import BaseBlock, EPS
 from ...simexceptions import InitializationError
 
 __all__ = ['PDCClassic', 'PDCImproved', 'PDC', 'PDCFA']
@@ -123,6 +123,14 @@ class _PDCBase(BaseBlock):
         The additional multiplier for adaptive gain for frequency estimator.
         (default to 1)
 
+    trans_omega: bool, optional
+        Whether to do metric conversion while iterating the frequency
+        estimations. Note that when it is turned on, more instability will be
+        introduced to the system because the iteration of the frequencies only
+        considers the linear approximation of the nonlinear problem. Detailed
+        Implementation of this function may be changed in the future according
+        to the author's research. (default to False)
+
     dt: float, optional
         Sampling time. If not given, default to the same as sampling time of
         the system.
@@ -154,12 +162,13 @@ class _PDCBase(BaseBlock):
     """
 
     def __init__(self, n_components, func_response, mu_global, mu_omega=1,
-                 dt=None, name='_PDCBase'):
+                 trans_omega=False, dt=None, name='_PDCBase'):
         super().__init__(nin=1, nout=1, name=name)
         self._n_components = n_components
         self._func_response = func_response
         self._mu_global = np.array(mu_global)
         self._mu_omega = np.array(mu_omega)
+        self._trans_omega = trans_omega
         # A and B are the amplitudes of the cosine and sine components of the
         # disturbance, self._phase records the current phase, and w is the
         # estimation of the frequency
@@ -207,16 +216,28 @@ class _PDCBase(BaseBlock):
         A = self._A
         B = self._B
         g = self._func_response(self._w)
+        g2 = abs(g) ** 2
         s = np.sin(self._phase)
         c = np.cos(self._phase)
+        dt = self.dt
+        dt2 = dt * dt
 
-        self._w -= 2 * err * self._mu_global * self._mu_omega *\
-            (g.real * (-A * s + B * c) - g.imag * (A * c + B * s)) * self.dt /\
-            abs(g)**2 / (A**2 + B**2 + 1)
-        self._A -= 2 * err * self._mu_global * (g.real * c - g.imag * s)\
-            * self.dt / abs(g)**2
-        self._B -= 2 * err * self._mu_global * (g.real * s + g.imag * c)\
-            * self.dt / abs(g)**2
+        gc = g.real * c- g.imag * s
+        gs = g.real * s+ g.imag * c
+
+        dA = - err * gc / g2 * dt
+        dB = - err * gs / g2 * dt
+        dw = - err * (-gs * A + gc * B) * dt
+
+        if self._trans_omega:
+            trans_divisor = (-gs * A + gc * B)**2
+            d_amp2 = (np.sqrt((A+dA)**2+(B+dB)**2)-np.sqrt(A**2+B**2))**2
+            restrictor = d_amp2 / (g2 * dt2)
+            dw /= trans_divisor + restrictor + EPS
+
+        self._A += dA * self._mu_global
+        self._B += dB * self._mu_global
+        self._w += dw * self._mu_global * self._mu_omega
 
         self._phase += self._w * self.dt
         self._phase[self._phase > 2 * np.pi] -= np.pi * 2
@@ -249,6 +270,14 @@ class PDCImproved(_PDCBase):
         The additional multiplier for adaptive gain for frequency estimator.
         (default to 1)
 
+    trans_omega: bool, optional
+        Whether to do metric conversion while iterating the frequency
+        estimations. Note that when it is turned on, more instability will be
+        introduced to the system because the iteration of the frequencies only
+        considers the linear approximation of the nonlinear problem. Detailed
+        Implementation of this function may be changed in the future according
+        to the author's research. (default to False)
+
     dt: float, optional
         Sampling time. If not given, default to the same as sampling time of
         the system.
@@ -269,9 +298,10 @@ class PDCImproved(_PDCBase):
     My paper on ICSV26.
     """
 
-    def __init__(self, w0, func_response, mu_global, mu_omega=1, dt=None,
-                 name='PDC_improved'):
-        super().__init__(len(w0), func_response, mu_global, mu_omega, dt, name)
+    def __init__(self, w0, func_response, mu_global, mu_omega=1,
+                 trans_omega=False, dt=None, name='PDC_improved'):
+        super().__init__(len(w0), func_response, mu_global, mu_omega,
+              trans_omega, dt, name)
         self._w0 = np.asarray(w0)
 
     @property
@@ -319,6 +349,14 @@ class PDC(_PDCBase):
         The additional multiplier for adaptive gain for frequency estimator.
         (default to 1)
 
+    trans_omega: bool, optional
+        Whether to do metric conversion while iterating the frequency
+        estimations. Note that when it is turned on, more instability will be
+        introduced to the system because the iteration of the frequencies only
+        considers the linear approximation of the nonlinear problem. Detailed
+        Implementation of this function may be changed in the future according
+        to the author's research. (default to False)
+
     t_fft: float, optional
         The time for collecting data for fft analysis. The control will not
         begin until simulation time reaches t_fft. (default to 5)
@@ -359,11 +397,11 @@ class PDC(_PDCBase):
     """
 
     def __init__(self, n_components, func_response, mu_global, mu_omega=1,
-                 t_fft=5, t_fft_start=0, resolution=None,
+                 trans_omega=False, t_fft=5, t_fft_start=0, resolution=None,
                  window="blackman", dt=None, name='PDC'):
         super().__init__(n_components, func_response=func_response,
-                         mu_global=mu_global, mu_omega=mu_omega, dt=dt,
-                         name=name)
+                         mu_global=mu_global, mu_omega=mu_omega,
+                         trans_omega=trans_omega, dt=dt, name=name)
         self._t_fft = t_fft
         self._t_fft_start = t_fft_start
         self._resolution = resolution
