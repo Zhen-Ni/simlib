@@ -9,9 +9,10 @@ from .datalogger import DataLogger
 from .simexceptions import SetupError, InitializationError, StopSimulation, \
     StepError, DefinitionError
 
-__all__ = ['System', 'BaseBlock', 'NA']
+__all__ = ['System', 'BaseBlock', 'NA', 'EPS']
 
-STEPRATETOL = 1e-6
+EPS = 1e-9
+STEPRATETOL = EPS
 
 
 class _NAType(float):
