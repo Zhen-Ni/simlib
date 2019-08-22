@@ -40,8 +40,8 @@ class FuncSource:
         self.theta2 = 50**2/2/pi
         self.theta3 = 75**2/2/pi
         self.freq0 = np.array([25,50,75])
-        self.freqn = np.array([24.9,24.9*2,24.9*3])
-#        self.freqn = np.array([23,46,69])
+#        self.freqn = np.array([24.9,24.9*2,24.9*3])
+        self.freqn = np.array([40,35,90])
         self.freq_history = []
 
     def __call__(self,t):
@@ -75,12 +75,12 @@ def build_system_mine(func_source):
     system = sim.System(dt=T, t_stop=90)
 
     source = sim.UserDefinedSource(func_source, name='source')
-    noise = sim.GaussianNoise(0.00**2, seed=201905081338)
+    noise = sim.GaussianNoise(0.04**2, seed=201905081338)
     source_total = sim.Sum('++')
     beamc = sim.TransferFunction(SYS_C.num, SYS_C.den, name='beamc')
     beamd = sim.TransferFunction(SYS_D.num, SYS_D.den, name='beamd')
     beamd_noise = sim.TransferFunction(SYS_D.num, SYS_D.den, name='beamd-noise')
-    controller = sim.PDC(3, func_response,0.6, 1, trans_omega=True,t_fft_start=9,t_fft=1,resolution=0.01)
+    controller = sim.PDC(3, func_response,0.6, 15, trans_omega='metric',t_fft_start=9,t_fft=1,resolution=0.01)
     combiner = sim.Sum('++')
     recorder = sim.Recorder(name ='recorder')
 

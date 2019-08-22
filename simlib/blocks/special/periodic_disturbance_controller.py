@@ -123,13 +123,14 @@ class _PDCBase(BaseBlock):
         The additional multiplier for adaptive gain for frequency estimator.
         (default to 1)
 
-    trans_omega: bool, optional
+    trans_omega: str, optional
         Whether to do metric conversion while iterating the frequency
         estimations. Note that when it is turned on, more instability will be
         introduced to the system because the iteration of the frequencies only
         considers the linear approximation of the nonlinear problem. Detailed
         Implementation of this function may be changed in the future according
-        to the author's research. (default to False)
+        to the author's research. It can be set to None, 'uniform' or 'metric'.
+        (default to None)
 
     dt: float, optional
         Sampling time. If not given, default to the same as sampling time of
@@ -162,7 +163,7 @@ class _PDCBase(BaseBlock):
     """
 
     def __init__(self, n_components, func_response, mu_global, mu_omega=1,
-                 trans_omega=False, dt=None, name='_PDCBase'):
+                 trans_omega=None, dt=None, name='_PDCBase'):
         super().__init__(nin=1, nout=1, name=name)
         self._n_components = n_components
         self._func_response = func_response
@@ -222,18 +223,35 @@ class _PDCBase(BaseBlock):
         dt = self.dt
         dt2 = dt * dt
 
-        gc = g.real * c- g.imag * s
-        gs = g.real * s+ g.imag * c
+        gc = g.real * c - g.imag * s
+        gs = g.real * s + g.imag * c
 
         dA = - err * gc / g2 * dt
         dB = - err * gs / g2 * dt
         dw = - err * (-gs * A + gc * B) * dt
 
-        if self._trans_omega:
-            trans_divisor = (-gs * A + gc * B)**2
-            d_amp2 = (np.sqrt((A+dA)**2+(B+dB)**2)-np.sqrt(A**2+B**2))**2
+        if not self._trans_omega:
+            pass
+        elif self._trans_omega == 'uniform':
+            # 采用同量纲的控制力幅值作为限制因子，防止尺度变换系数做分母时出现奇异的情况。同时
+            # 将尺度变换系数进行了等效，采用与其同量纲的值（trans_divisor）作为替代，以减小
+            # 频率迭代过程中的波动。
+            trans_divisor = g2 * (A**2 + B**2)
+            d_amp2 = (np.sqrt((A + dA)**2 + (B + dB)**2) -
+                      np.sqrt(A**2 + B**2))**2
             restrictor = d_amp2 / (g2 * dt2)
             dw /= trans_divisor + restrictor + EPS
+        elif self._trans_omega == 'metric':
+            # 采用同量纲的控制力幅值作为限制因子，防止尺度变换系数做分母时出现奇异的情况。
+            trans_divisor = (-gs * A + gc * B)**2
+            d_amp2 = (np.sqrt((A + dA)**2 + (B + dB)**2) -
+                      np.sqrt(A**2 + B**2))**2
+            restrictor = d_amp2 / (g2 * dt2)
+            dw /= trans_divisor + restrictor + EPS
+        else:
+            self.system.warn('unrecognized parameter trans_omega={} in {}, '
+                             'use the default version instead'
+                             .format(self._trans_omega, self))
 
         self._A += dA * self._mu_global
         self._B += dB * self._mu_global
@@ -270,13 +288,14 @@ class PDCImproved(_PDCBase):
         The additional multiplier for adaptive gain for frequency estimator.
         (default to 1)
 
-    trans_omega: bool, optional
+    trans_omega: str, optional
         Whether to do metric conversion while iterating the frequency
         estimations. Note that when it is turned on, more instability will be
         introduced to the system because the iteration of the frequencies only
         considers the linear approximation of the nonlinear problem. Detailed
         Implementation of this function may be changed in the future according
-        to the author's research. (default to False)
+        to the author's research. It can be set to None, 'uniform' or 'metric'.
+        (default to None)
 
     dt: float, optional
         Sampling time. If not given, default to the same as sampling time of
@@ -299,9 +318,9 @@ class PDCImproved(_PDCBase):
     """
 
     def __init__(self, w0, func_response, mu_global, mu_omega=1,
-                 trans_omega=False, dt=None, name='PDC_improved'):
+                 trans_omega=None, dt=None, name='PDC_improved'):
         super().__init__(len(w0), func_response, mu_global, mu_omega,
-              trans_omega, dt, name)
+                         trans_omega, dt, name)
         self._w0 = np.asarray(w0)
 
     @property
@@ -349,13 +368,14 @@ class PDC(_PDCBase):
         The additional multiplier for adaptive gain for frequency estimator.
         (default to 1)
 
-    trans_omega: bool, optional
+    trans_omega: str, optional
         Whether to do metric conversion while iterating the frequency
         estimations. Note that when it is turned on, more instability will be
         introduced to the system because the iteration of the frequencies only
         considers the linear approximation of the nonlinear problem. Detailed
         Implementation of this function may be changed in the future according
-        to the author's research. (default to False)
+        to the author's research. It can be set to None, 'uniform' or 'metric'.
+        (default to None)
 
     t_fft: float, optional
         The time for collecting data for fft analysis. The control will not
@@ -397,7 +417,7 @@ class PDC(_PDCBase):
     """
 
     def __init__(self, n_components, func_response, mu_global, mu_omega=1,
-                 trans_omega=False, t_fft=5, t_fft_start=0, resolution=None,
+                 trans_omega=None, t_fft=5, t_fft_start=0, resolution=None,
                  window="blackman", dt=None, name='PDC'):
         super().__init__(n_components, func_response=func_response,
                          mu_global=mu_global, mu_omega=mu_omega,

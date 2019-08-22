@@ -112,7 +112,7 @@ def test_PDC_improved():
                                      else x)
     controller = sim.PDCImproved(freq_initial,
                                  lambda x: signal.freqresp(SYS_C, x)[1],
-                                 1, 1)
+                                 1, 1, 'metric')
     combiner = sim.Sum('++')
     recorder = sim.Recorder(name='recorder')
 
@@ -183,6 +183,6 @@ def test_PDC():
 
 if __name__ == '__main__':
     # show_bode()
-    test_PDC_classic()
+#    test_PDC_classic()
     test_PDC_improved()
-    test_PDC()
+#    test_PDC()
