@@ -231,8 +231,8 @@ def modal_decomposition(system):
     if len(r):
         residue = scipy.signal.invres(r, p, k_, tol=0)
         residue = scipy.signal.TransferFunction(*residue)
-    elif k.any():
-        residue = scipy.signal.TransferFunction(k, [1])
+    elif k_.any():
+        residue = scipy.signal.TransferFunction(k_, [1])
     else:
         residue = None
     return k, xi, wn, residue

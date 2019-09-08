@@ -1,4 +1,7 @@
-﻿20190821
+﻿20190904
+BUGS fix (modal_decomposition)
+
+20190821
 对periodic_disturbance_controller.py进行修改。改动主要关于频率跟踪算法，使其能够通过尺度变换加速收敛。
 此次改动涉及到算法及API的变化。
 
