@@ -1,4 +1,8 @@
-﻿20190904
+﻿20190910
+Remove the coefficient 2 in the iteration procedure of PDCClassic, and multiply
+it by dt to make it consistent with other PDC classes.
+
+20190904
 BUGS fix (modal_decomposition)
 
 20190821

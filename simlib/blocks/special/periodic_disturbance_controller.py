@@ -93,8 +93,8 @@ class PDCClassic(BaseBlock):
         wt = self._w * t
         c = np.cos(wt)
         s = np.sin(wt)
-        self._theta_c -= 2 * err * mu * (g.real * c - g.imag * s)
-        self._theta_s -= 2 * err * mu * (g.real * s + g.imag * c)
+        self._theta_c -= err * mu * (g.real * c - g.imag * s) * self.dt
+        self._theta_s -= err * mu * (g.real * s + g.imag * c) * self.dt
         return np.sum(self._theta_c * c + self._theta_s * s),
 
 

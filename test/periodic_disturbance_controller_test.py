@@ -59,7 +59,7 @@ def show_bode():
     show()
 
 
-def test_PDC_classic(mu=1e-2):
+def test_PDC_classic(mu=20):
     t_control_start = 5
 
     system = sim.System(dt=T, t_stop=20)
@@ -183,6 +183,6 @@ def test_PDC():
 
 if __name__ == '__main__':
     # show_bode()
-#    test_PDC_classic()
-    test_PDC_improved()
+    test_PDC_classic()
+#    test_PDC_improved()
 #    test_PDC()
