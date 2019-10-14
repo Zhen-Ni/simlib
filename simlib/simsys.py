@@ -648,6 +648,15 @@ class BaseBlock:
         """Update the output signal of the port before this step."""
         outport = self._outports[outportId]
         sn = self.system.n
+        # Check whether the system is casual
+        # If the system is not casual, its output_step would be called by
+        # itself. We can check it by comparing self._n and sn, as self._n
+        # equaing to sn means this block is in iteration right now, or has
+        # finished its iteration at this time step. And if it has finished its
+        # iteration, output_step should not be called.
+        if self._n == sn:
+            raise StepError("Non-casual detected while stepping the block "
+                            "{s} at n = {n}".format(s=self, n=sn))
         # whether sampling time is reached
         if (self._n_block + 1) * self._stepRate == sn:
             y = self.OUTPUTSTEP(outportId)
